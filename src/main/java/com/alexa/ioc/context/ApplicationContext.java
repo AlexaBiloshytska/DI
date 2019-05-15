@@ -1,4 +1,4 @@
-package com.alexa.DI.context;
+package com.alexa.ioc.context;
 
 import java.util.List;
 

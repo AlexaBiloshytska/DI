@@ -1,9 +1,9 @@
-package com.alexa.DI.context;
+package com.alexa.ioc.context;
 
-import com.alexa.DI.entity.Bean;
-import com.alexa.DI.entity.BeanDefinition;
-import com.alexa.DI.exceptions.BeanNotFoundException;
-import com.alexa.DI.reader.BeanDefinitionReader;
+import com.alexa.ioc.entity.Bean;
+import com.alexa.ioc.entity.BeanDefinition;
+import com.alexa.ioc.exceptions.BeanNotFoundException;
+import com.alexa.ioc.reader.BeanDefinitionReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,11 @@ public class ClassPathApplicationContext implements ApplicationContext {
     private BeanDefinitionReader reader;
     private List<Bean> beans = new ArrayList<>();
     private List<BeanDefinition> beanDefinitions;
+
+    /**
+     * TODO: Create method that call BeanDefinitionReader to get the list of bean definitions
+     * After, go through this list and create Beans based on BeanDefinitions (use reflection for this)
+     */
 
     public <T> T getBean(Class<T> clazz) {
         return null;

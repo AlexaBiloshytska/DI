@@ -1,4 +1,4 @@
-package com.alexa.DI.exceptions;
+package com.alexa.ioc.exceptions;
 
 public class BeanNotFoundException extends RuntimeException {
     public BeanNotFoundException(String message) {

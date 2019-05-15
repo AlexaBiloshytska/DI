@@ -1,4 +1,4 @@
-package com.alexa.DI.entity;
+package com.alexa.ioc.entity;
 
 public class Bean {
     private Object value;
