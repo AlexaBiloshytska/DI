@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans>
+    <bean id="mailService" class="com.alexa.ioc.service.MailService">
+        <property name="protocol" value = "POP3"/>
+    </bean>
+
+    <bean id="userService" class="com.alexa.ioc.service.UserService">
+        <property name="service" ref="mailService"/>
+    </bean>
+
+</beans>
