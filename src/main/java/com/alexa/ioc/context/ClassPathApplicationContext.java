@@ -4,19 +4,20 @@ import com.alexa.ioc.entity.Bean;
 import com.alexa.ioc.entity.BeanDefinition;
 import com.alexa.ioc.exceptions.BeanNotFoundException;
 import com.alexa.ioc.reader.BeanDefinitionReader;
+import com.alexa.ioc.reader.xml.SaxXmlBeanDefinitionsReader;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClassPathApplicationContext implements ApplicationContext {
-    private BeanDefinitionReader reader;
-    private List<Bean> beans = new ArrayList<>();
-    private List<BeanDefinition> beanDefinitions;
 
-    /**
-     * TODO: Create method that call BeanDefinitionReader to get the list of bean definitions
-     * After, go through this list and create Beans based on BeanDefinitions (use reflection for this)
-     */
+    private List<Bean> beans = new ArrayList<>();
+
+    public ClassPathApplicationContext() {
+        BeanDefinitionReader reader = new SaxXmlBeanDefinitionsReader();
+        List<BeanDefinition> beanDefinitions = reader.readBeanDefinitions();
+        createBeansFromBeansDefinitions(beanDefinitions);
+    }
 
     public <T> T getBean(Class<T> clazz) {
         return null;
@@ -30,7 +31,6 @@ public class ClassPathApplicationContext implements ApplicationContext {
         }
         throw new BeanNotFoundException("Bean with class= " + clazz + " and id= " + id + ", are not found!");
     }
-
 
     public Object getBean(String id) {
         for (Bean bean : beans) {
@@ -48,4 +48,31 @@ public class ClassPathApplicationContext implements ApplicationContext {
         }
         return beansNames;
     }
+
+    private void createBeansFromBeansDefinitions(List<BeanDefinition> beanDefinitions){
+        for (BeanDefinition beanDefinition: beanDefinitions){
+            String beanId = beanDefinition.getId();
+
+            Bean bean = new Bean();
+            bean.setId(beanId);
+
+            String beanClassName = beanDefinition.getBeanClassName();
+
+            try {
+                Object objectFromBeanClassName = Class.forName(beanClassName).newInstance();
+                bean.setValue(objectFromBeanClassName);
+
+            } catch (InstantiationException| IllegalAccessException |ClassNotFoundException e) {
+                throw new RuntimeException("Cannot create bean class  " + beanClassName, e );
+            }
+
+            beans.add(bean);
+        }
+
+    }
+
+
 }
+//TO DO :
+// create value, inject, refinject injector
+//add test
