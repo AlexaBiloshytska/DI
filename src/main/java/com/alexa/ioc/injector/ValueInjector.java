@@ -32,38 +32,43 @@ public class ValueInjector {
 
                         Method[] methods = object.getClass().getMethods();
                         Method method = getMethodByName(methods, setterMethod);
-                        Class<?> fieldType = method.getParameterTypes()[0];
-                        try {
-                            if (boolean.class.equals(fieldType)) {
-                                method.invoke(object, Boolean.parseBoolean(value));
-                            } else if (int.class.equals(fieldType)) {
-                                method.invoke(object, Integer.parseInt(value));
-                            } else if (double.class.equals(fieldType)) {
-                                method.invoke(object, Double.parseDouble(value));
-                            } else if (long.class.equals(fieldType)) {
-                                method.invoke(object, Long.parseLong(value));
-                            } else if (short.class.equals(fieldType)) {
-                                method.invoke(object, Short.parseShort(value));
-                            } else if (byte.class.equals(fieldType)) {
-                                method.invoke(object, Byte.parseByte(value));
-                            } else if (float.class.equals(fieldType)) {
-                                method.invoke(object, Float.parseFloat(value));
-                            } else if (char.class.equals(fieldType)) {
-                                method.invoke(object, value.charAt(0));
-                            } else {
-                                method.invoke(object, value);
-                            }
 
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        } catch (InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
+                        invoke(object, value, method);
                     }
                 }
             }
         }
 
+    }
+
+    private void invoke(Object object, String value, Method method) {
+        Class<?> fieldType = method.getParameterTypes()[0];
+        try {
+            if (boolean.class.equals(fieldType)) {
+                method.invoke(object, Boolean.parseBoolean(value));
+            } else if (int.class.equals(fieldType)) {
+                method.invoke(object, Integer.parseInt(value));
+            } else if (double.class.equals(fieldType)) {
+                method.invoke(object, Double.parseDouble(value));
+            } else if (long.class.equals(fieldType)) {
+                method.invoke(object, Long.parseLong(value));
+            } else if (short.class.equals(fieldType)) {
+                method.invoke(object, Short.parseShort(value));
+            } else if (byte.class.equals(fieldType)) {
+                method.invoke(object, Byte.parseByte(value));
+            } else if (float.class.equals(fieldType)) {
+                method.invoke(object, Float.parseFloat(value));
+            } else if (char.class.equals(fieldType)) {
+                method.invoke(object, value.charAt(0));
+            } else {
+                method.invoke(object, value);
+            }
+
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     private Method getMethodByName(Method[] methods, String name) {

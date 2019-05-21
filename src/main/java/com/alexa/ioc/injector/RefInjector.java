@@ -9,32 +9,71 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-public class RefInjector extends Injector {
+public class RefInjector {
+    private List<BeanDefinition> beanDefinitions;
     private List<Bean> beans;
 
     public RefInjector(List<BeanDefinition> beanDefinitions, List<Bean> beans) {
-        super(beanDefinitions, beans);
-    }
-
-    @Override
-    public void injectDependencies(Object beanValue, Method setterMethod, String beanRefId) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    Object refBeanValue = getBean(beans, beanRefId);
-    setterMethod.invoke(beanValue, refBeanValue);
-
-    }
-
-    @Override
-    public Map<String, String> getDependenciesMap(BeanDefinition beanDefinition) {
-        return beanDefinition.getRefDependencies();
+        this.beanDefinitions = beanDefinitions;
+        this.beans = beans;
     }
 
 
-    private Object getBean(List<Bean> beans, String id) {
-        for (Bean bean : beans) {
-            if (bean.getId().equals(id)) {
-                return bean.getValue();
+    public void inject () {
+        for (BeanDefinition beanDefinition : beanDefinitions) {
+            Map<String, String> refDependenciesMap = beanDefinition.getRefDependencies();
+            if (refDependenciesMap != null) {
+                for (Bean targetBean : beans) {
+                    if (targetBean.getId().equals(beanDefinition.getId())) {
+                        for (Map.Entry<String, String> entry : refDependenciesMap.entrySet()) {
+                            String fieldName = entry.getKey();
+                            String refBeanId = entry.getValue();
+
+                            String setterMethod = "set" + capitalize(fieldName);
+
+                            Object targetObject = targetBean.getValue();
+                            Method[] methods = targetObject.getClass().getMethods();
+
+                            Method method = getMethodByName(methods, setterMethod);
+
+                            Class<?> parameterTypes = method.getParameterTypes()[0];
+
+                            Object refObject = getBean(refBeanId);
+                            try {
+                                method.invoke(targetObject, parameterTypes.cast(refObject));
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            } catch (InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    }
+                }
+
             }
         }
-        throw new BeanInjectDependenciesException("Bean with id= " + id + " not found!");
+    }
+
+    private Object getBean(String beanId) {
+        for (Bean bean : beans) {
+           if(bean.getId().equals(beanId)){
+               return bean.getValue();
+           }
+        }
+        throw new RuntimeException();
+    }
+
+    private Method getMethodByName(Method[] methods, String name) {
+        for(Method method : methods){
+            if (method.getName().equals(name)) {
+                return method;
+            }
+        }
+        throw new BeanInjectDependenciesException("Setter method not found by name" + name);
+    }
+
+    private String capitalize(final String line) {
+        return Character.toUpperCase(line.charAt(0)) + line.substring(1);
     }
 }

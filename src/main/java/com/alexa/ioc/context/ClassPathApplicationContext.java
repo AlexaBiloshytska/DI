@@ -3,6 +3,8 @@ package com.alexa.ioc.context;
 import com.alexa.ioc.entity.Bean;
 import com.alexa.ioc.entity.BeanDefinition;
 import com.alexa.ioc.exceptions.BeanNotFoundException;
+import com.alexa.ioc.injector.RefInjector;
+import com.alexa.ioc.injector.ValueInjector;
 import com.alexa.ioc.reader.BeanDefinitionReader;
 import com.alexa.ioc.reader.xml.SaxXmlBeanDefinitionsReader;
 
@@ -17,10 +19,32 @@ public class ClassPathApplicationContext implements ApplicationContext {
         BeanDefinitionReader reader = new SaxXmlBeanDefinitionsReader();
         List<BeanDefinition> beanDefinitions = reader.readBeanDefinitions();
         createBeansFromBeansDefinitions(beanDefinitions);
+
+        new ValueInjector(beanDefinitions, beans).inject();
+        new RefInjector(beanDefinitions, beans).inject();
+
+
+
     }
 
     public <T> T getBean(Class<T> clazz) {
-        return null;
+        T resultBeanValue = null;
+        boolean isFound = false;
+        for (Bean bean : beans) {
+            if (bean.getValue().getClass().equals(clazz)) {
+                if (!isFound) {
+                    resultBeanValue = clazz.cast(bean.getValue());
+                    isFound = true;
+                } else {
+                    throw new RuntimeException("Beans with class: " + clazz + ", more than one!");
+                }
+            }
+        }
+        if (isFound) {
+            return resultBeanValue;
+        } else {
+            throw new BeanNotFoundException("Bean with class= " + clazz + ", not found!");
+        }
     }
 
     public <T> T getBean(String id, Class<T> clazz) {
@@ -31,6 +55,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
         }
         throw new BeanNotFoundException("Bean with class= " + clazz + " and id= " + id + ", are not found!");
     }
+
 
     public Object getBean(String id) {
         for (Bean bean : beans) {
@@ -48,6 +73,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
         }
         return beansNames;
     }
+
 
     private void createBeansFromBeansDefinitions(List<BeanDefinition> beanDefinitions){
         for (BeanDefinition beanDefinition: beanDefinitions){
@@ -70,7 +96,6 @@ public class ClassPathApplicationContext implements ApplicationContext {
         }
 
     }
-
 
 }
 //TO DO :

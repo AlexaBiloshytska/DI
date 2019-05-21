@@ -3,6 +3,7 @@
 <beans>
     <bean id="mailService" class="com.alexa.ioc.service.MailService">
         <property name="protocol" value = "POP3"/>
+        <property name="port" value = "80"/>
     </bean>
 
     <bean id="userService" class="com.alexa.ioc.service.UserService">
@@ -10,3 +11,5 @@
     </bean>
 
 </beans>
+
+

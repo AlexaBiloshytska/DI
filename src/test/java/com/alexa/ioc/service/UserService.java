@@ -3,15 +3,19 @@ package com.alexa.ioc.service;
 public class UserService {
     private MailService service;
 
-    public UserService(MailService service) {
-        this.service = service;
-    }
-
     public void sendEmailWithUsersCount(){
         int numberOfUsersInSystem = getUsersCount();
         service.sendEmail("aleksandranecheporuk@gmail.com", "there are " + numberOfUsersInSystem + " users in the system");
 
 
+    }
+
+    public MailService getService() {
+        return service;
+    }
+
+    public void setService(MailService service) {
+        this.service = service;
     }
 
     public int getUsersCount() {
