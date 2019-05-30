@@ -1,9 +1,26 @@
 package com.alexa.ioc.service;
 
-public class MailService {
+import com.alexa.ioc.entity.BeanDefinition;
+import com.alexa.ioc.processor.BeanFactoryPostProcessor;
+
+import javax.annotation.PostConstruct;
+import java.util.List;
+
+public class MailService implements BeanFactoryPostProcessor {
     private String protocol;
     private int port;
 
+    @Override
+    public void postProcessBeanFactory(List<BeanDefinition> beanDefinitions) {
+        for (BeanDefinition beanDefinition : beanDefinitions) {
+            System.out.println(beanDefinition.getId());
+        }
+    }
+
+    @PostConstruct
+    private void init(){
+        sendEmail("aleksandranecheporuk@gmail.com","POP3");
+    }
 
     public void sendEmail(String mailTo, String content){
         System.out.println("Sending email To: " + mailTo);
@@ -33,4 +50,6 @@ public class MailService {
                 ", port=" + port +
                 '}';
     }
+
+
 }

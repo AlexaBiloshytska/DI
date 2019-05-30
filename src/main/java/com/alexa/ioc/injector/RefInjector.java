@@ -47,10 +47,8 @@ public class RefInjector {
                                 e.printStackTrace();
                             }
                         }
-
                     }
                 }
-
             }
         }
     }

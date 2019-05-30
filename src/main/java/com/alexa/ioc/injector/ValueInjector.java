@@ -20,20 +20,23 @@ public class ValueInjector {
 
     public void inject(){
         for (BeanDefinition beanDefinition : beanDefinitions){
-            for (Bean bean: beans) {
-                if ( beanDefinition.getId().equals(bean.getId())) {
-                    Object object = bean.getValue();
-                    Map<String, String> valueMap = beanDefinition.getDependencies();
-                    for (Map.Entry<String, String> entry : valueMap.entrySet()) {
-                        String field = entry.getKey();
-                        String value = entry.getValue();
+            Map<String, String> refDependenciesMap = beanDefinition.getRefDependencies();
+            if (refDependenciesMap != null) {
+                for (Bean bean : beans) {
+                    if (beanDefinition.getId().equals(bean.getId())) {
+                        Object object = bean.getValue();
+                        Map<String, String> valueMap = beanDefinition.getDependencies();
+                        for (Map.Entry<String, String> entry : valueMap.entrySet()) {
+                            String field = entry.getKey();
+                            String value = entry.getValue();
 
-                        String setterMethod = "set" + capitalize(field);
+                            String setterMethod = "set" + capitalize(field);
 
-                        Method[] methods = object.getClass().getMethods();
-                        Method method = getMethodByName(methods, setterMethod);
+                            Method[] methods = object.getClass().getMethods();
+                            Method method = getMethodByName(methods, setterMethod);
 
-                        invoke(object, value, method);
+                            invoke(object, value, method);
+                        }
                     }
                 }
             }
