@@ -9,42 +9,19 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-public class ValueInjector {
-    private List<BeanDefinition> beanDefinitions;
-    private List<Bean> beans;
+public class ValueInjector extends Injector {
 
-    public ValueInjector(List<BeanDefinition> beanDefinitions, List<Bean> beans) {
-        this.beanDefinitions = beanDefinitions;
-        this.beans = beans;
+    public ValueInjector(Map<BeanDefinition, Bean> beanDefinitionBeanMap) {
+        super(beanDefinitionBeanMap);
     }
 
-    public void inject(){
-        for (BeanDefinition beanDefinition : beanDefinitions){
-            Map<String, String> refDependenciesMap = beanDefinition.getRefDependencies();
-            if (refDependenciesMap != null) {
-                for (Bean bean : beans) {
-                    if (beanDefinition.getId().equals(bean.getId())) {
-                        Object object = bean.getValue();
-                        Map<String, String> valueMap = beanDefinition.getDependencies();
-                        for (Map.Entry<String, String> entry : valueMap.entrySet()) {
-                            String field = entry.getKey();
-                            String value = entry.getValue();
-
-                            String setterMethod = "set" + capitalize(field);
-
-                            Method[] methods = object.getClass().getMethods();
-                            Method method = getMethodByName(methods, setterMethod);
-
-                            invoke(object, value, method);
-                        }
-                    }
-                }
-            }
-        }
-
+    @Override
+    public Map<String, String> getDependencies(BeanDefinition beanDefinition) {
+        return beanDefinition.getDependencies();
     }
 
-    private void invoke(Object object, String value, Method method) {
+
+    void invoke(Object object, String value, Method method) {
         Class<?> fieldType = method.getParameterTypes()[0];
         try {
             if (boolean.class.equals(fieldType)) {
@@ -67,21 +44,13 @@ public class ValueInjector {
                 method.invoke(object, value);
             }
 
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new BeanInjectDependenciesException("Unable to inject value: " + value
+                    + " using method: " + method
+                    + " for bean with class: " + object.getClass());
         }
     }
 
-    private Method getMethodByName(Method[] methods, String name) {
-        for(Method method : methods){
-            if (method.getName().equals(name)) {
-                return method;
-            }
-        }
-        throw new BeanInjectDependenciesException("Setter method not found by name" + name);
-    }
 
 
     private String capitalize(final String line) {

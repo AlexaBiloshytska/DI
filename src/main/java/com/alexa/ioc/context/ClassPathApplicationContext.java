@@ -14,13 +14,14 @@ import javax.annotation.PostConstruct;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClassPathApplicationContext implements ApplicationContext {
     private List<String> beansNames = new ArrayList<>();
     private List<BeanPostProcessor> beanPostProcessorsInstances = new ArrayList<>();
-    private List<Bean> beans = new ArrayList<>();
-    private List<BeanDefinition> beanDefinitions;
+    private Map <BeanDefinition, Bean> beanDefinitionBeanMap = new HashMap<>();
 
     public ClassPathApplicationContext() {
         BeanDefinitionReader reader = new SaxXmlBeanDefinitionsReader();
@@ -30,8 +31,8 @@ public class ClassPathApplicationContext implements ApplicationContext {
 
         beanFactoryPostProcessor(beanDefinitions);
 
-        new ValueInjector(beanDefinitions, beans).inject();
-        new RefInjector(beanDefinitions, beans).inject();
+        new ValueInjector(beanDefinitionBeanMap).inject();
+        new RefInjector(beanDefinitionBeanMap).inject();
 
         postProcessBeforeInitialization();
         init();
@@ -42,7 +43,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
     public <T> T getBean(Class<T> clazz) {
         T resultBeanValue = null;
         boolean isFound = false;
-        for (Bean bean : beans) {
+        for (Bean bean : beanDefinitionBeanMap.values()) {
             if (bean.getValue().getClass().equals(clazz)) {
                 if (!isFound) {
                     resultBeanValue = clazz.cast(bean.getValue());
@@ -60,7 +61,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
     }
 
     public <T> T getBean(String id, Class<T> clazz) {
-        for (Bean bean : beans) {
+        for (Bean bean : beanDefinitionBeanMap.values()) {
             if (bean.getValue().getClass().equals(clazz) && bean.getId().equals(id)) {
                 return clazz.cast(bean.getValue());
             }
@@ -70,7 +71,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
 
 
     public Object getBean(String id) {
-        for (Bean bean : beans) {
+        for (Bean bean : beanDefinitionBeanMap.values()) {
             if (bean.getId().equals(id)) {
                 return bean.getValue();
             }
@@ -83,14 +84,14 @@ public class ClassPathApplicationContext implements ApplicationContext {
            return beansNames;
 
        }
-        for (Bean bean : beans) {
+        for (Bean bean : beanDefinitionBeanMap.values()) {
             beansNames.add(bean.getId());
         }
         return beansNames;
     }
 
     public void init(){
-        for (Bean bean : beans ) {
+        for (Bean bean : beanDefinitionBeanMap.values() ) {
             Method[] methods = bean.getValue().getClass().getMethods();
             for (Method method : methods) {
                 if (method.isAnnotationPresent(PostConstruct.class)){
@@ -100,14 +101,12 @@ public class ClassPathApplicationContext implements ApplicationContext {
                         throw  new RuntimeException("Can't invoke method: " + method +"in class " +bean.getValue().getClass());
                     }
                 }
-
             }
-
         }
     }
 
-
     private void createBeansFromBeansDefinitions(List<BeanDefinition> beanDefinitions){
+
         for (BeanDefinition beanDefinition: beanDefinitions){
             String beanId = beanDefinition.getId();
 
@@ -123,8 +122,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
             } catch (InstantiationException| IllegalAccessException |ClassNotFoundException e) {
                 throw new RuntimeException("Cannot create bean class  " + beanClassName, e );
             }
-
-            beans.add(bean);
+            beanDefinitionBeanMap.put(beanDefinition, bean);
         }
 
     }
@@ -148,8 +146,8 @@ public class ClassPathApplicationContext implements ApplicationContext {
     }
 
     private void postProcessBeforeInitialization() {
-        for (BeanPostProcessor beanPostProcessorsInstance : beanPostProcessorsInstances) {
-            for (Bean bean : beans) {
+        for (BeanPostProcessor beanPostProcessorsInstance : beanPostProcessorsInstances) { // ?
+            for (Bean bean : beanDefinitionBeanMap.values()) {
                 Object newBeanValue = beanPostProcessorsInstance.postProcessBeforeInitialization(bean.getValue(), bean.getId());
                 bean.setValue(newBeanValue);
 
@@ -159,7 +157,7 @@ public class ClassPathApplicationContext implements ApplicationContext {
 
     private void postProcessAfterInitialization() {
         for (BeanPostProcessor beanPostProcessorsInstance : beanPostProcessorsInstances) {
-            for (Bean bean : beans) {
+            for (Bean bean : beanDefinitionBeanMap.values()) {
                 Object newBeanValue = beanPostProcessorsInstance.postProcessAfterInitialization(bean.getValue(), bean.getId());
                 bean.setValue(newBeanValue);
 

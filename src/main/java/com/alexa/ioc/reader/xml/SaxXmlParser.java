@@ -42,7 +42,7 @@ public class SaxXmlParser extends DefaultHandler {
     }
 
     public void processBean(Attributes attributes) {
-        BeanDefinition beanDefinition = getBeanDefinition();
+        BeanDefinition beanDefinition = new BeanDefinition();
 
         String id = attributes.getValue("id");
         String clazz = attributes.getValue("class");
@@ -60,16 +60,6 @@ public class SaxXmlParser extends DefaultHandler {
             beanDefinition.setId(createDefaultId);
         }
         beanDefinitions.add(beanDefinition);
-    }
-
-    public BeanDefinition getBeanDefinition() {
-        BeanDefinition beanDefinition = new BeanDefinition();
-        Map<String, String> valueDependenciesMap = new HashMap<>();
-        Map<String, String> refDependenciesMap = new HashMap<>();
-
-        beanDefinition.setDependencies(valueDependenciesMap);
-        beanDefinition.setRefDependencies(refDependenciesMap);
-        return beanDefinition;
     }
 
     public List<BeanDefinition> getBeanDefinitions() {

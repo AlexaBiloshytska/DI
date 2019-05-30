@@ -1,12 +1,13 @@
 package com.alexa.ioc.entity;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class BeanDefinition {
     private String id;
     private String beanClassName;
-    private Map<String, String> dependencies;
-    private Map<String, String> refDependencies;
+    private Map<String, String> dependencies = new HashMap<>(); // Eager preset to avoid null dependencies
+    private Map<String, String> refDependencies = new HashMap<>();
 
     public String getId() {
         return id;
